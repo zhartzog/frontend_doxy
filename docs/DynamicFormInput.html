@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>DynamicFormInput.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>DynamicFormInput.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-1">&#x00a7;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> React, {useEffect, useState} <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;react&#x27;</span>;
+<span class="hljs-keyword">import</span> {Accordion, Card, Row, Col, Form, Jumbotron, Container, useAccordionToggle, Button} <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;react-bootstrap&#x27;</span>;
+<span class="hljs-keyword">import</span> axios <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;axios&#x27;</span>;
+<span class="hljs-keyword">import</span> {getSunrise, getSunset} <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;sunrise-sunset-js&quot;</span>;
+
+
+<span class="hljs-keyword">import</span> AirSigmetModal <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./dynamic_subcomponents/AirSigmetAccordion&quot;</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;./../stylesheets/RiskAssessmentForm.css&#x27;</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;./../stylesheets/AdminPanel.css&#x27;</span>;
+<span class="hljs-keyword">import</span> AirSigmetAccordion <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./dynamic_subcomponents/AirSigmetAccordion&quot;</span>;
+<span class="hljs-keyword">import</span> PirepAccordion <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./dynamic_subcomponents/PirepAccordion&quot;</span>;
+<span class="hljs-keyword">import</span> CrossCountryQuestions <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./CrossCountryQuestions&quot;</span>;
+<span class="hljs-keyword">import</span> ResultPage <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./ResultPage&quot;</span>;
+<span class="hljs-keyword">import</span> moment <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;moment&quot;</span>;
+<span class="hljs-keyword">import</span> {forEach} <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;react-bootstrap/ElementChildren&quot;</span>;
+
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">DynamicFormInput</span>(<span class="hljs-params">props</span>) </span>{
+
+    <span class="hljs-keyword">const</span> [currentWeather, setCurrentWeather] = useState({
+        <span class="hljs-attr">airSigmetList</span>: [],
+        <span class="hljs-attr">winds</span>: <span class="hljs-string">&#x27;&#x27;</span>,
+        <span class="hljs-attr">crosswind</span>: <span class="hljs-number">0</span>,
+        <span class="hljs-attr">crosswind_gust</span>: <span class="hljs-number">0</span>,
+        <span class="hljs-attr">headwind</span>: <span class="hljs-number">0</span>,
+        <span class="hljs-attr">headwind_gust</span>: <span class="hljs-number">0</span>,
+        <span class="hljs-attr">instrumentCurrent</span>: <span class="hljs-literal">true</span>,
+        <span class="hljs-attr">metar</span>: <span class="hljs-string">&#x27;&#x27;</span>,
+        <span class="hljs-attr">alternateMetar</span>: <span class="hljs-string">&#x27;&#x27;</span>,
+        <span class="hljs-attr">destinationMetar</span>: [],
+        <span class="hljs-attr">pireps</span>: [],
+        <span class="hljs-attr">primaryRunway</span>: <span class="hljs-string">&#x27;&#x27;</span>
+    });
+    <span class="hljs-keyword">const</span> [isInstrumentCurrent, setIsInstrumentCurrent] = useState(<span class="hljs-string">&quot;No&quot;</span>);
+    <span class="hljs-keyword">const</span> [departureIAP, setDepartureIAP] = useState(<span class="hljs-string">&quot;Precision&quot;</span>);
+    <span class="hljs-keyword">const</span> [destinationIAP, setDestinationIAP] = useState(<span class="hljs-string">&quot;Precision&quot;</span>);
+    <span class="hljs-keyword">const</span> [alternateIAP, setAlternateIAP] = useState(<span class="hljs-string">&quot;Precision&quot;</span>);
+    <span class="hljs-keyword">const</span> [acceptableWinds, setAcceptableWinds] = useState(<span class="hljs-string">&quot;No&quot;</span>);
+    <span class="hljs-keyword">const</span> [requireWinds, setRequireWinds] = useState(<span class="hljs-literal">false</span>);
+    <span class="hljs-keyword">const</span> [displayAirSigmets, setDisplayAirSigmets] = useState([]);
+    <span class="hljs-keyword">const</span> [displayPireps, setDisplayPireps] = useState([]);
+
+    <span class="hljs-keyword">const</span> [enrouteCeiling, setEnrouteCeiling] = useState(<span class="hljs-number">1000</span>);
+    <span class="hljs-keyword">const</span> [enrouteVis, setEnrouteVis] = useState(<span class="hljs-number">4</span>);
+    <span class="hljs-keyword">const</span> [thunderstorm, setThunderstorm] = useState(<span class="hljs-number">0</span>);
+    <span class="hljs-keyword">const</span> [fuelAtAlt, setFuelAtAlt] = useState(<span class="hljs-number">90</span>);
+    <span class="hljs-keyword">const</span> [vfrCheckpoints, setVFRCheckpoints] = useState(<span class="hljs-string">&quot;Few to None&quot;</span>);
+    <span class="hljs-keyword">const</span> [timeEnroute, setTimeEnroute] = useState(<span class="hljs-number">0</span>);
+    <span class="hljs-keyword">const</span> [formValidation, setFormValidation] = useState(<span class="hljs-literal">false</span>);
+    <span class="hljs-keyword">const</span> [destinationCrosswind, setDestinationCrosswind] = useState(<span class="hljs-number">0</span>);
+    <span class="hljs-keyword">const</span> [alternateCrosswind, setAlternateCrosswind] = useState(<span class="hljs-number">0</span>);
+    <span class="hljs-keyword">const</span> [showResults, setShowResults] = useState(<span class="hljs-literal">false</span>);
+
+    useEffect(<span class="hljs-function">() =&gt;</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;Request Data&quot;</span>)
+        <span class="hljs-built_in">console</span>.log(props.requestData)
+        axios({
+            <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;post&#x27;</span>,
+            <span class="hljs-attr">url</span>: <span class="hljs-string">&quot;/basicFormInfo&quot;</span>,
+            <span class="hljs-attr">headers</span>: {
+                <span class="hljs-attr">accept</span>: <span class="hljs-string">&quot;application/json&quot;</span>,
+                <span class="hljs-string">&quot;Content-Type&quot;</span>: <span class="hljs-string">&quot;application/json&quot;</span>
+            },
+            <span class="hljs-attr">data</span>: props.requestData
+        }).then(<span class="hljs-function"><span class="hljs-params">response</span> =&gt;</span> {
+            <span class="hljs-built_in">console</span>.log(response.data);
+            setCurrentWeather(response.data);
+            checkCrosswind(response.data);
+            <span class="hljs-keyword">let</span> AirSigmetAccordionList = [];
+            <span class="hljs-keyword">let</span> PirepAccordionList = [];
+            response.data.airSigmetList.map(<span class="hljs-function">(<span class="hljs-params">item, index</span>) =&gt;</span> AirSigmetAccordionList.push(<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">AirSigmetAccordion</span>
+                <span class="hljs-attr">airSigmet</span>=<span class="hljs-string">{item}</span> <span class="hljs-attr">index</span>=<span class="hljs-string">{index}/</span>&gt;</span></span>));
+            response.data.pireps.map(<span class="hljs-function">(<span class="hljs-params">item, index</span>) =&gt;</span> PirepAccordionList.push(<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">PirepAccordion</span> <span class="hljs-attr">pirep</span>=<span class="hljs-string">{item}</span>
+                                                                                              <span class="hljs-attr">index</span>=<span class="hljs-string">{index}/</span>&gt;</span></span>));
+            setDisplayAirSigmets(AirSigmetAccordionList);
+            setDisplayPireps(PirepAccordionList);
+
+
+        })
+    }, []);
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">generate_risk_info</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">const</span> is_commercial = !(props.requestData.studentLevel === <span class="hljs-string">&quot;private&quot;</span>);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;Current Weather: &quot;</span>)
+        <span class="hljs-built_in">console</span>.log(currentWeather);
+
+        <span class="hljs-keyword">if</span> (isDepartureIFR() || props.requestData.flightRules === <span class="hljs-string">&quot;IFR&quot;</span>) {
+            <span class="hljs-keyword">if</span> (isLocal()) {
+                <span class="hljs-keyword">const</span> data = {
+                    <span class="hljs-string">&quot;is_local&quot;</span>: isLocal(),
+                    <span class="hljs-string">&quot;departure_vis&quot;</span>: currentWeather.metar.visibility,
+                    <span class="hljs-string">&quot;departure_ceilings&quot;</span>: getCeiling(currentWeather.metar.skyCoverage),
+                    <span class="hljs-string">&quot;departure_iap&quot;</span>: departureIAP,
+                    <span class="hljs-string">&quot;departure_winds&quot;</span>: currentWeather.metar.windSpeed,
+                    <span class="hljs-string">&quot;departure_gusts&quot;</span>: currentWeather.metar.windGust,
+                    <span class="hljs-string">&quot;departure_crosswind&quot;</span>: currentWeather.crosswind,
+                    <span class="hljs-string">&quot;enroute_ceilings&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;enroute_vis&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;time_enroute&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;tunderstorm_risk&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;fuel_at_alternate&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;destination_vis&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;destination_ceilings&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;destination_iap&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;destination_winds&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;destination_gusts&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;destination_crosswind&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;alternate_vis&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;alternate_ceilings&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;alternate_iap&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;alternate_winds&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;alternate_gusts&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;alternate_crosswind&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;time_of_day&quot;</span>: props.timeofFlight,
+                    <span class="hljs-string">&quot;flight_duty_period&quot;</span>: props.requestData.flightDuty,
+                    <span class="hljs-string">&quot;previous_flights&quot;</span>: props.requestData.prevFlights,
+                    <span class="hljs-string">&quot;temperature&quot;</span>: currentWeather.metar.temperature,
+                    <span class="hljs-string">&quot;type_of_flight&quot;</span>: type_of_flight()
+                }
+                <span class="hljs-keyword">return</span> data;
+
+            }
+            <span class="hljs-keyword">const</span> data = {
+                <span class="hljs-string">&quot;is_local&quot;</span>: isLocal(),
+                <span class="hljs-string">&quot;departure_vis&quot;</span>: currentWeather.metar.visibility,
+                <span class="hljs-string">&quot;departure_ceilings&quot;</span>: getCeiling(currentWeather.metar.skyCoverage),
+                <span class="hljs-string">&quot;departure_iap&quot;</span>: departureIAP,
+                <span class="hljs-string">&quot;departure_winds&quot;</span>: currentWeather.metar.windSpeed,
+                <span class="hljs-string">&quot;departure_gusts&quot;</span>: currentWeather.metar.windGust,
+                <span class="hljs-string">&quot;departure_crosswind&quot;</span>: currentWeather.crosswind,
+                <span class="hljs-string">&quot;enroute_ceilings&quot;</span>: enrouteCeiling,
+                <span class="hljs-string">&quot;enroute_vis&quot;</span>: enrouteVis,
+                <span class="hljs-string">&quot;time_enroute&quot;</span>: timeEnroute,
+                <span class="hljs-string">&quot;tunderstorm_risk&quot;</span>: thunderstorm,
+                <span class="hljs-string">&quot;fuel_at_alternate&quot;</span>: fuelAtAlt,
+                <span class="hljs-string">&quot;destination_vis&quot;</span>: currentWeather.destinationMetar[<span class="hljs-number">0</span>].visibility,
+                <span class="hljs-string">&quot;destination_ceilings&quot;</span>: getCeiling(currentWeather.destinationMetar[<span class="hljs-number">0</span>].skyCoverage),
+                <span class="hljs-string">&quot;destination_iap&quot;</span>: destinationIAP,
+                <span class="hljs-string">&quot;destination_winds&quot;</span>: currentWeather.destinationMetar[<span class="hljs-number">0</span>].windSpeed,
+                <span class="hljs-string">&quot;destination_gusts&quot;</span>: currentWeather.destinationMetar[<span class="hljs-number">0</span>].windGust,
+                <span class="hljs-string">&quot;destination_crosswind&quot;</span>: destinationCrosswind,
+                <span class="hljs-string">&quot;alternate_vis&quot;</span>: currentWeather.alternateMetar.visibility,
+                <span class="hljs-string">&quot;alternate_ceilings&quot;</span>: getCeiling(currentWeather.alternateMetar.skyCoverage),
+                <span class="hljs-string">&quot;alternate_iap&quot;</span>: alternateIAP,
+                <span class="hljs-string">&quot;alternate_winds&quot;</span>: currentWeather.alternateMetar.windSpeed,
+                <span class="hljs-string">&quot;alternate_gusts&quot;</span>: currentWeather.alternateMetar.windGust,
+                <span class="hljs-string">&quot;alternate_crosswind&quot;</span>: alternateCrosswind,
+                <span class="hljs-string">&quot;time_of_day&quot;</span>: props.timeofFlight,
+                <span class="hljs-string">&quot;flight_duty_period&quot;</span>: props.requestData.flightDuty,
+                <span class="hljs-string">&quot;previous_flights&quot;</span>: props.requestData.prevFlights,
+                <span class="hljs-string">&quot;temperature&quot;</span>: currentWeather.metar.temperature,
+                <span class="hljs-string">&quot;type_of_flight&quot;</span>: type_of_flight()
+            }
+            <span class="hljs-keyword">return</span> data;
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">if</span> (isLocal()) {
+                <span class="hljs-keyword">const</span> data = {
+                    <span class="hljs-string">&quot;is_local&quot;</span>: isLocal(),
+                    <span class="hljs-string">&quot;is_dual&quot;</span>: props.requestData.isDualFlight,
+                    <span class="hljs-string">&quot;is_commercial&quot;</span>: is_commercial,
+                    <span class="hljs-string">&quot;departure_vis&quot;</span>: currentWeather.metar.visibility,
+                    <span class="hljs-string">&quot;departure_ceilings&quot;</span>: getCeiling(currentWeather.metar.skyCoverage),
+                    <span class="hljs-string">&quot;departure_winds&quot;</span>: currentWeather.metar.windSpeed,
+                    <span class="hljs-string">&quot;departure_gusts&quot;</span>: currentWeather.metar.windGust,
+                    <span class="hljs-string">&quot;departure_crosswind&quot;</span>: currentWeather.crosswind,
+                    <span class="hljs-string">&quot;enroute_ceilings&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;enroute_vis&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;vfr_checkpoints&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;time_enroute&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;fuel_at_alternate&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;destination_vis&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;destination_ceilings&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;destination_winds&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;destination_gusts&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;destination_crosswind&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;alternate_vis&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;alternate_ceilings&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;alternate_winds&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;alternate_gusts&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;alternate_crosswind&quot;</span>: <span class="hljs-literal">null</span>,
+                    <span class="hljs-string">&quot;time_of_day&quot;</span>: props.timeofFlight,
+                    <span class="hljs-string">&quot;flight_duty_period&quot;</span>: props.requestData.flightDuty,
+                    <span class="hljs-string">&quot;previous_flights&quot;</span>: props.requestData.prevFlights,
+                    <span class="hljs-string">&quot;type_of_flight&quot;</span>: type_of_flight(),
+                    <span class="hljs-string">&quot;temperature&quot;</span>: currentWeather.metar.temperature,
+                    <span class="hljs-string">&quot;flight_location&quot;</span>: flight_location(),
+                    <span class="hljs-string">&quot;ground_ref_maneuvers&quot;</span>: props.requestData.groundReferenceManeuvers,
+                    <span class="hljs-string">&quot;experience_in_airplane&quot;</span>: props.timeInAirplane,
+                    <span class="hljs-string">&quot;last_dual_landing&quot;</span>: props.lastDualLanding,
+                    <span class="hljs-string">&quot;last_dual_stall&quot;</span>: props.lastDualStall
+                }
+                <span class="hljs-keyword">return</span> data;
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-keyword">const</span> data = {
+                    <span class="hljs-string">&quot;is_local&quot;</span>: isLocal(),
+                    <span class="hljs-string">&quot;is_dual&quot;</span>: props.requestData.isDualFlight,
+                    <span class="hljs-string">&quot;is_commercial&quot;</span>: is_commercial,
+                    <span class="hljs-string">&quot;departure_vis&quot;</span>: currentWeather.metar.visibility,
+                    <span class="hljs-string">&quot;departure_ceilings&quot;</span>: getCeiling(currentWeather.metar.skyCoverage),
+                    <span class="hljs-string">&quot;departure_winds&quot;</span>: currentWeather.metar.windSpeed,
+                    <span class="hljs-string">&quot;departure_gusts&quot;</span>: currentWeather.metar.windGust,
+                    <span class="hljs-string">&quot;departure_crosswind&quot;</span>: currentWeather.crosswind,
+                    <span class="hljs-string">&quot;enroute_ceilings&quot;</span>: enrouteCeiling,
+                    <span class="hljs-string">&quot;enroute_vis&quot;</span>: enrouteVis,
+                    <span class="hljs-string">&quot;vfr_checkpoints&quot;</span>: vfrCheckpoints,
+                    <span class="hljs-string">&quot;time_enroute&quot;</span>: timeEnroute,
+                    <span class="hljs-string">&quot;fuel_at_alternate&quot;</span>: fuelAtAlt,
+                    <span class="hljs-string">&quot;destination_vis&quot;</span>: currentWeather.destinationMetar[<span class="hljs-number">0</span>].visibility,
+                    <span class="hljs-string">&quot;destination_ceilings&quot;</span>: getCeiling(currentWeather.destinationMetar[<span class="hljs-number">0</span>].skyCoverage),
+                    <span class="hljs-string">&quot;destination_winds&quot;</span>: currentWeather.destinationMetar[<span class="hljs-number">0</span>].windSpeed,
+                    <span class="hljs-string">&quot;destination_gusts&quot;</span>: currentWeather.destinationMetar[<span class="hljs-number">0</span>].windGust,
+                    <span class="hljs-string">&quot;destination_crosswind&quot;</span>: destinationCrosswind,
+                    <span class="hljs-string">&quot;alternate_vis&quot;</span>: currentWeather.alternateMetar.visibility,
+                    <span class="hljs-string">&quot;alternate_ceilings&quot;</span>: getCeiling(currentWeather.alternateMetar.skyCoverage),
+                    <span class="hljs-string">&quot;alternate_winds&quot;</span>: currentWeather.alternateMetar.windSpeed,
+                    <span class="hljs-string">&quot;alternate_gusts&quot;</span>: currentWeather.alternateMetar.windGust,
+                    <span class="hljs-string">&quot;alternate_crosswind&quot;</span>: alternateCrosswind,
+                    <span class="hljs-string">&quot;time_of_day&quot;</span>: props.timeofFlight,
+                    <span class="hljs-string">&quot;flight_duty_period&quot;</span>: props.requestData.flightDuty,
+                    <span class="hljs-string">&quot;previous_flights&quot;</span>: props.requestData.prevFlights,
+                    <span class="hljs-string">&quot;type_of_flight&quot;</span>: type_of_flight(),
+                    <span class="hljs-string">&quot;temperature&quot;</span>: currentWeather.metar.temperature,
+                    <span class="hljs-string">&quot;flight_location&quot;</span>: flight_location(),
+                    <span class="hljs-string">&quot;ground_ref_maneuvers&quot;</span>: props.requestData.ground_ref_maneuvers,
+                    <span class="hljs-string">&quot;experience_in_airplane&quot;</span>: props.timeInAirplane,
+                    <span class="hljs-string">&quot;last_dual_landing&quot;</span>: props.lastDualLanding,
+                    <span class="hljs-string">&quot;last_dual_stall&quot;</span>: props.lastDualStall
+                }
+                <span class="hljs-keyword">return</span> data;
+            }
+
+        }
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getCeiling</span>(<span class="hljs-params">skyCoverage</span>) </span>{
+        <span class="hljs-keyword">let</span> highestCeiling = <span class="hljs-number">12000</span>;
+        skyCoverage.forEach(<span class="hljs-function"><span class="hljs-params">i</span> =&gt;</span> {
+            <span class="hljs-keyword">if</span> (i.coverage === <span class="hljs-string">&quot;BKN&quot;</span> || i.coverage === <span class="hljs-string">&quot;OVC&quot;</span>) {
+                <span class="hljs-keyword">if</span> (highestCeiling &gt; i.base)
+                    highestCeiling = i.base;
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (i.coverage === <span class="hljs-string">&quot;OVX&quot;</span>) {
+                <span class="hljs-keyword">if</span> (highestCeiling &gt; i.verticalVis)
+                    highestCeiling = i.verticalVis;
+            }
+        })
+        <span class="hljs-keyword">return</span> highestCeiling;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isLocal</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">return</span> (props.requestData.typeOfFlight === <span class="hljs-string">&quot;pattern&quot;</span> || props.requestData.typeOfFlight === <span class="hljs-string">&quot;practice_area&quot;</span> || props.requestData.typeOfFlight === <span class="hljs-string">&quot;aux_field&quot;</span>);
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isIFR</span>(<span class="hljs-params"></span>)</span>{
+        <span class="hljs-keyword">return</span> props.flightRules === <span class="hljs-string">&quot;IFR&quot;</span>;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">flight_location</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">if</span> (props.requestData.typeOfFlight === <span class="hljs-string">&quot;pattern&quot;</span> || props.requestData.typeOfFlight === <span class="hljs-string">&quot;practice_area&quot;</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Local Area&quot;</span>;
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (props.requestData.typeOfFlight === <span class="hljs-string">&quot;aux_field&quot;</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Aux Field&quot;</span>;
+        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;cross_country&quot;</span>;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">type_of_flight</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">if</span> (props.requestData.categoryOfFlight === <span class="hljs-string">&quot;normal&quot;</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Normal&quot;</span>;
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (props.requestData.categoryOfFlight === <span class="hljs-string">&quot;stage_check&quot;</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Stage Check&quot;</span>;
+        <span class="hljs-keyword">else</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;FAA Check&quot;</span>;
+    }
+
+    <span class="hljs-comment">/*This method will check if the crosswind is within limiations*/</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">checkCrosswind</span>(<span class="hljs-params">data</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-2">&#x00a7;</a>
+              </div>
+              <p>TODO: get threshold values from backend
+console.log(currentWeather);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        setRequireWinds(data.crosswind &gt;= <span class="hljs-number">10</span> || data.crosswind_gust &gt;= <span class="hljs-number">10</span> || data.headwind &gt;= <span class="hljs-number">15</span> || data.headwind_gust &gt;= <span class="hljs-number">15</span>);
+    }
+
+    <span class="hljs-comment">/*Formats the crosswind/headwind. If there is no gusts it should just display the winds. With gusts the gust should be preceded by a &#x27;G&#x27;. Ex: 12G20*/</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getWind</span>(<span class="hljs-params">isCrosswind</span>) </span>{
+        <span class="hljs-keyword">if</span> (isCrosswind) {
+            <span class="hljs-keyword">if</span> (currentWeather.crosswind_gust === <span class="hljs-number">0</span>)
+                <span class="hljs-keyword">return</span> currentWeather.crosswind;
+            <span class="hljs-keyword">else</span>
+                <span class="hljs-keyword">return</span> currentWeather.crosswind + <span class="hljs-string">&quot;G&quot;</span> + currentWeather.crosswind_gust;
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">if</span> (currentWeather.headwind_gust === <span class="hljs-number">0</span>)
+                <span class="hljs-keyword">return</span> currentWeather.headwind;
+            <span class="hljs-keyword">else</span>
+                <span class="hljs-keyword">return</span> currentWeather.headwind + <span class="hljs-string">&quot;G&quot;</span> + currentWeather.headwind_gust;
+        }
+    }
+
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isDepartureIFR</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">if</span> (currentWeather.metar === <span class="hljs-literal">null</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+        <span class="hljs-keyword">return</span> (currentWeather.metar.flightCategory === <span class="hljs-string">&quot;IFR&quot;</span> || currentWeather.metar.flightCategory === <span class="hljs-string">&quot;LIFR&quot;</span>);
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">displayMetars</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">if</span> (props.requestData.categoryOfFlight !== <span class="hljs-string">&quot;normal&quot;</span> || props.requestData.typeOfFlight === <span class="hljs-string">&quot;pattern&quot;</span> || props.requestData.typeOfFlight === <span class="hljs-string">&quot;practice area&quot;</span>) {
+            <span class="hljs-keyword">return</span> (
+                <span class="xml"><span class="hljs-tag">&lt;&gt;</span> <span class="hljs-tag">&lt;<span class="hljs-name">h4</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">u</span>&gt;</span>METAR:<span class="hljs-tag">&lt;/<span class="hljs-name">u</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">h4</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;display-metar&quot;</span>&gt;</span>{currentWeather.metar.rawText}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                <span class="hljs-tag">&lt;/&gt;</span></span>)
+        } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (props.requestData.categoryOfFlight === <span class="hljs-string">&quot;normal&quot;</span>) {
+            <span class="hljs-keyword">return</span> (
+                <span class="xml"><span class="hljs-tag">&lt;&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">h4</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">u</span>&gt;</span>Departure METAR: <span class="hljs-tag">&lt;/<span class="hljs-name">u</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">h4</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;display-metar&quot;</span>&gt;</span>{currentWeather.metar.rawText}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">h4</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">u</span>&gt;</span>{props.requestData.typeOfFlight === &quot;aux_field&quot; ? &quot;Auxiliary Airport METARs&quot; : &quot;Destination Airport METARs&quot;}: <span class="hljs-tag">&lt;/<span class="hljs-name">u</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">h4</span>&gt;</span>
+                    {currentWeather.destinationMetar.map(i =&gt; {
+                        /*The color coding is VFR - Green text, IFR - Red text, LIFR - Magenta text. Returns appropriate color.*/
+                        if (i === null)
+                            return (<span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;error&quot;</span>&gt;</span>UNABLE TO DISPLAY METAR. Check Airport CODE.<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>)
+                        if (i.flightCategory === &quot;VFR&quot;)
+                            return (<span class="hljs-tag">&lt;&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;display-metar vfr&quot;</span>&gt;</span>{i.rawText}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span><span class="hljs-tag">&lt;/&gt;</span></span>)
+                        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (i.flightCategory === <span class="hljs-string">&quot;MVFR&quot;</span>)
+                            <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&lt;&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;display-metar mvfr&quot;</span>&gt;</span>{i.rawText}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span><span class="hljs-tag">&lt;/&gt;</span></span>)
+                        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (i.flightCategory === <span class="hljs-string">&quot;IFR&quot;</span>)
+                            <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&lt;&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;display-metar ifr&quot;</span>&gt;</span>{i.rawText}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span><span class="hljs-tag">&lt;/&gt;</span></span>)
+                        <span class="hljs-keyword">else</span>
+                            <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&lt;&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;display-metar lifr&quot;</span>&gt;</span>{i.rawText}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span><span class="hljs-tag">&lt;/&gt;</span></span>)
+                    })}
+                    {props.requestData.typeOfFlight === <span class="hljs-string">&quot;cross_country&quot;</span> &amp;&amp;
+
+                    <span class="xml"><span class="hljs-tag">&lt;&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">h4</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">u</span>&gt;</span>Alternate Aiport METAR: <span class="hljs-tag">&lt;/<span class="hljs-name">u</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">h4</span>&gt;</span>
+                        {displayAlternateAirport()}
+                    <span class="hljs-tag">&lt;/&gt;</span></span>
+                    }
+                &lt;/&gt;
+            )
+        }
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">displayAlternateAirport</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">if</span> (currentWeather.alternateMetar === <span class="hljs-literal">null</span>)
+            <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;error&quot;</span>&gt;</span>UNABLE TO DISPLAY METAR. Check Airport CODE.<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></span>)
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (currentWeather.alternateMetar.flightCategory === <span class="hljs-string">&quot;VFR&quot;</span>)
+            <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&lt;&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;display-metar vfr&quot;</span>&gt;</span>{currentWeather.alternateMetar.rawText}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span><span class="hljs-tag">&lt;/&gt;</span></span>)
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (currentWeather.alternateMetar.flightCategory === <span class="hljs-string">&quot;MVFR&quot;</span>)
+            <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&lt;&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;display-metar mvfr&quot;</span>&gt;</span>{currentWeather.alternateMetar.rawText}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span><span class="hljs-tag">&lt;/&gt;</span></span>)
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (currentWeather.alternateMetar.flightCategory === <span class="hljs-string">&quot;IFR&quot;</span>)
+            <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&lt;&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;display-metar ifr&quot;</span>&gt;</span>{currentWeather.alternateMetar.rawText}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span><span class="hljs-tag">&lt;/&gt;</span></span>)
+        <span class="hljs-keyword">else</span>
+            <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&lt;&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;display-metar lifr&quot;</span>&gt;</span>{currentWeather.alternateMetar.rawText}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span><span class="hljs-tag">&lt;/&gt;</span></span>)
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">instrument_local_iap</span>(<span class="hljs-params"></span>)</span>{
+        <span class="hljs-keyword">return</span>(
+            <span class="xml"><span class="hljs-tag">&lt;&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Row}</span> <span class="hljs-attr">controlId</span>=<span class="hljs-string">&quot;local_bestIAP&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Form.Label</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;4&quot;</span>&gt;</span>What is the best IAP Avialable at the departure airport? <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Label</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Form.Control</span> <span class="hljs-attr">as</span>=<span class="hljs-string">&quot;select&quot;</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;studentInfo&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;student_level&quot;</span>
+                                  <span class="hljs-attr">onChange</span>=<span class="hljs-string">{e</span> =&gt;</span> setDepartureIAP(e.target.value)}
+                                  value={departureIAP}&gt;
+                        <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;Precision&quot;</span>&gt;</span>Precision<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;Non-Precision&quot;</span>&gt;</span>Non-Precision<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;Circling&quot;</span>&gt;</span>Circling<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Control</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+            <span class="hljs-tag">&lt;/&gt;</span></span>
+        )
+    }
+
+    <span class="hljs-keyword">if</span> (!showResults) {
+        <span class="hljs-keyword">return</span> (
+            <span class="xml"><span class="hljs-tag">&lt;&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Jumbotron</span> <span class="hljs-attr">fluid</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;jumbo&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>Additional Questions<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Jumbotron</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">Container</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;dynamicContainer&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Form</span> <span class="hljs-attr">nonValidate</span> <span class="hljs-attr">validated</span>=<span class="hljs-string">{formValidation}</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;overflow-auto&quot;</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;12&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;px-3&quot;</span>&gt;</span>
+                                {displayMetars()}
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        {isIFR()?instrument_local_iap(): &quot;&quot;}
+
+                        {isDepartureIFR() &amp;&amp;
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Row}</span> <span class="hljs-attr">controlId</span>=<span class="hljs-string">&quot;isInstrumentCurrent&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Label</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;4&quot;</span>&gt;</span>Are you instrument Proficient and Current?<span class="hljs-tag">&lt;/<span class="hljs-name">Form.Label</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Control</span> <span class="hljs-attr">as</span>=<span class="hljs-string">&quot;select&quot;</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;studentInfo&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;student_level&quot;</span>
+                                          <span class="hljs-attr">onChange</span>=<span class="hljs-string">{e</span> =&gt;</span> setIsInstrumentCurrent(e.target.value)}
+                                          value={isInstrumentCurrent}&gt;
+                                <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;Yes&quot;</span>&gt;</span>Yes<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;No&quot;</span>&gt;</span>No<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Control</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+                        }
+
+                        {requireWinds &amp;&amp;
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Row}</span> <span class="hljs-attr">controlId</span>=<span class="hljs-string">&quot;crosswind&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Label</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;4&quot;</span>&gt;</span>The winds
+                                are {currentWeather.winds}. {currentWeather.primaryRunway} has a
+                                headwind of {getWind(false)} and a crosswind of {getWind(true)}. Is that
+                                acceptable? <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Label</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Control</span> <span class="hljs-attr">as</span>=<span class="hljs-string">&quot;select&quot;</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;studentInfo&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;student_level&quot;</span>
+                                          <span class="hljs-attr">onChange</span>=<span class="hljs-string">{e</span> =&gt;</span> setAcceptableWinds(e.target.value)} value={acceptableWinds}&gt;
+                                <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;Yes&quot;</span>&gt;</span>Yes<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;No&quot;</span>&gt;</span>No<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Control</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+                        }
+
+                        {currentWeather.airSigmetList.length &gt; 0 &amp;&amp;
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Row}</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;12&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">h3</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>Airmets and Sigmets<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;12&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Accordion</span>&gt;</span>
+                                    {displayAirSigmets}
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Accordion</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+                        }
+
+                        {currentWeather.pireps.length &gt; 0 &amp;&amp;
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Row}</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;12&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">h3</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>Pireps<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;12&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Accordion</span>&gt;</span>
+                                    {displayPireps}
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Accordion</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+                        }
+
+                        {!isLocal() &amp;&amp;
+                        <span class="hljs-tag">&lt;<span class="hljs-name">CrossCountryQuestions</span>
+                            <span class="hljs-attr">flightRules</span>=<span class="hljs-string">{props.requestData.flightRules}</span>
+                            <span class="hljs-attr">setEnrouteCeiling</span>=<span class="hljs-string">{setEnrouteCeiling}</span>
+                            <span class="hljs-attr">setEnrouteVis</span>=<span class="hljs-string">{setEnrouteVis}</span>
+                            <span class="hljs-attr">setThunderstorm</span>=<span class="hljs-string">{setThunderstorm}</span>
+                            <span class="hljs-attr">setFuelAtAlt</span>=<span class="hljs-string">{setFuelAtAlt}</span>
+                            <span class="hljs-attr">vfrCheckpoints</span>=<span class="hljs-string">{vfrCheckpoints}</span>
+                            <span class="hljs-attr">setVFRCheckpoints</span>=<span class="hljs-string">{setVFRCheckpoints}</span>
+                            <span class="hljs-attr">setTimeEnroute</span>=<span class="hljs-string">{setTimeEnroute}</span>
+                            <span class="hljs-attr">destinationIAP</span>=<span class="hljs-string">{destinationIAP}</span>
+                            <span class="hljs-attr">setDestinationIAP</span>=<span class="hljs-string">{setDestinationIAP}</span>
+                            <span class="hljs-attr">alternateIAP</span>=<span class="hljs-string">{alternateIAP}</span>
+                            <span class="hljs-attr">setAlternateIAP</span>=<span class="hljs-string">{setAlternateIAP}</span>
+                            <span class="hljs-attr">setDestinationCrosswind</span>=<span class="hljs-string">{setDestinationCrosswind}</span>
+                            <span class="hljs-attr">setAlternateCrosswind</span>=<span class="hljs-string">{setAlternateCrosswind}</span>
+                        /&gt;</span>}
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{()</span> =&gt;</span> setShowResults(true)}&gt;
+                            Submit
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Form</span>&gt;</span>
+
+                <span class="hljs-tag">&lt;/<span class="hljs-name">Container</span>&gt;</span>
+            <span class="hljs-tag">&lt;/&gt;</span></span>
+        );
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">const</span> data = generate_risk_info();
+        <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">ResultPage</span> <span class="hljs-attr">requestData</span>=<span class="hljs-string">{data}</span> <span class="hljs-attr">flightRules</span>=<span class="hljs-string">{props.flightRules}</span>
+                            <span class="hljs-attr">isLocal</span>=<span class="hljs-string">{isLocal}</span> <span class="hljs-attr">isDual</span>=<span class="hljs-string">{props.requestData.isDualFlight}/</span>&gt;</span></span>)
+    }
+}
+
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> DynamicFormInput;</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

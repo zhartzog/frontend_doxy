@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>AdminPanelRouter.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>AdminPanelRouter.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-1">&#x00a7;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> SearchStudent <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./SearchStudent&quot;</span>;
+<span class="hljs-keyword">import</span> CurrentSettings <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./CurrentSettings&quot;</span>;
+<span class="hljs-keyword">import</span> SetLimits <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./SetLimits&quot;</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;./../stylesheets/AdminPanel.css&#x27;</span>;
+<span class="hljs-keyword">import</span> React, {Component} <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;react&#x27;</span>;
+<span class="hljs-keyword">import</span> {Jumbotron, Button} <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;react-bootstrap&#x27;</span>;
+<span class="hljs-keyword">import</span> {BrowserRouter <span class="hljs-keyword">as</span> Router, Switch, Route, Redirect, Link} <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;react-router-dom&quot;</span>;
+
+<span class="hljs-comment">/*
+ * This component acts as a router for all of the admin panel pages.
+ */</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AdminPanelRouter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span></span>{
+  
+  <span class="hljs-comment">/*
+   * Constructs the state for the AdminPanelRouter.
+   */</span>
+  <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params">props</span>)</span> {
+      <span class="hljs-built_in">super</span>(props);
+
+      <span class="hljs-built_in">this</span>.state = ({});
+  }
+
+  <span class="hljs-comment">/*
+   * This removes the session variable.
+   */</span>
+  <span class="hljs-function"><span class="hljs-title">logout</span>(<span class="hljs-params"></span>)</span>{
+    sessionStorage.removeItem(<span class="hljs-string">&#x27;loggedin&#x27;</span>)
+  }
+
+  <span class="hljs-comment">/*
+   * This creates the urls for the different AdminPanel components
+   */</span>
+  <span class="hljs-function"><span class="hljs-title">render</span>(<span class="hljs-params"></span>)</span> {
+    <span class="hljs-keyword">if</span>(!sessionStorage.getItem(<span class="hljs-string">&#x27;loggedin&#x27;</span>)){
+      <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Redirect</span> <span class="hljs-attr">to</span>=<span class="hljs-string">&#x27;/Login&#x27;</span> /&gt;</span></span>
+    }
+    <span class="hljs-keyword">return</span> (
+      <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">Link</span> <span class="hljs-attr">to</span>=<span class="hljs-string">&quot;/&quot;</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">style</span>=<span class="hljs-string">{{</span> <span class="hljs-attr">float:</span> &quot;<span class="hljs-attr">right</span>&quot; }} <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span>&gt;</span>Form<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">Link</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">Link</span> <span class="hljs-attr">to</span>=<span class="hljs-string">&quot;/Login&quot;</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">style</span>=<span class="hljs-string">{{</span> <span class="hljs-attr">float:</span> &quot;<span class="hljs-attr">right</span>&quot; }} <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.logout.bind(this)}</span>&gt;</span>Logout<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">Link</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">Router</span>&gt;</span>
+  				<span class="hljs-tag">&lt;<span class="hljs-name">Switch</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">Route</span> <span class="hljs-attr">exact</span> <span class="hljs-attr">path</span>=<span class="hljs-string">&quot;/AdminPanel/SearchStudent&quot;</span> <span class="hljs-attr">component</span>=<span class="hljs-string">{SearchStudent}</span> /&gt;</span>
+  					<span class="hljs-tag">&lt;<span class="hljs-name">Route</span> <span class="hljs-attr">exact</span> <span class="hljs-attr">path</span>=<span class="hljs-string">&quot;/AdminPanel/CurrentSettings&quot;</span> <span class="hljs-attr">component</span>=<span class="hljs-string">{CurrentSettings}</span> /&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">Route</span> <span class="hljs-attr">exact</span> <span class="hljs-attr">path</span>=<span class="hljs-string">&quot;/AdminPanel/SetLimits&quot;</span> <span class="hljs-attr">component</span>=<span class="hljs-string">{SetLimits}</span> /&gt;</span>
+          <span class="hljs-tag">&lt;/<span class="hljs-name">Switch</span>&gt;</span>
+  			<span class="hljs-tag">&lt;/<span class="hljs-name">Router</span>&gt;</span>
+      <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+    );
+  }
+}
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> AdminPanelRouter;</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

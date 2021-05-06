@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>RiskAssessmentForm.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>RiskAssessmentForm.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-1">&#x00a7;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> React, {useEffect, useState} <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;react&#x27;</span>;
+<span class="hljs-keyword">import</span> {Button, Row, Col, Form, Jumbotron, Container} <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;react-bootstrap&#x27;</span>;
+<span class="hljs-keyword">import</span> {Link} <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;react-router-dom&quot;</span>;
+<span class="hljs-keyword">import</span> DatePicker <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;react-datepicker&#x27;</span>;
+<span class="hljs-keyword">import</span> axios <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;axios&#x27;</span>;
+<span class="hljs-keyword">import</span> moment <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;moment&#x27;</span>;
+<span class="hljs-keyword">import</span> notams <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;notams&#x27;</span>;
+
+<span class="hljs-keyword">import</span> FlightDutyFormInput <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./FlightDutyFormInput&quot;</span>;
+<span class="hljs-keyword">import</span> TypeOfFlightFormInput <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./dynamic_subcomponents/TypeOfFlightFormInput&quot;</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;./../stylesheets/RiskAssessmentForm.css&#x27;</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;./../stylesheets/AdminPanel.css&#x27;</span>;
+<span class="hljs-keyword">import</span> DynamicFormInput <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./DynamicFormInput&quot;</span>;
+<span class="hljs-keyword">import</span> HumanFactorQuestions <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./dynamic_subcomponents/HumanFactorQuestions&quot;</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">RiskAssessmentForm</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-comment">/* Departure time and date. Format is MM/dd/yyyy h:mm aa*/</span>
+    <span class="hljs-keyword">const</span> [departureTime, setDepartureTime] = useState(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>());
+    <span class="hljs-keyword">const</span> [timeofFlight, setTimeofFlight] = useState(<span class="hljs-string">&quot;Day&quot;</span>);
+    <span class="hljs-keyword">const</span> [departureAirport, setDepartureAirport] = useState();
+    <span class="hljs-keyword">const</span> [studentName, setStudentName] = useState(<span class="hljs-string">&quot;&quot;</span>);
+    <span class="hljs-comment">/*What license the student is pursing. This will indicate their skill level.*/</span>
+    <span class="hljs-keyword">const</span> [studentLevel, setStudentLevel] = useState(<span class="hljs-string">&quot;private&quot;</span>);
+    <span class="hljs-comment">/*Will there be an instructor on board. Particularly important if &#x27;private&#x27; is selected.*/</span>
+    <span class="hljs-keyword">const</span> [isDualFlight, setIsDualFlight] = useState(<span class="hljs-literal">false</span>);
+    <span class="hljs-comment">/*How Many flights have they flown previously that day*/</span>
+    <span class="hljs-keyword">const</span> [prevFlights, setPrevFlights] = useState(<span class="hljs-number">0</span>);
+    <span class="hljs-comment">/*When was their first flight today.*/</span>
+    <span class="hljs-keyword">const</span> [flightDuty, setFlightDuty] = useState(<span class="hljs-number">0</span>);
+    <span class="hljs-comment">/*What is the category of flight: Normal, Stage Check, FAA checkride*/</span>
+    <span class="hljs-keyword">const</span> [categoryOfFlight, setCategoryOfFlight] = useState(<span class="hljs-string">&quot;normal&quot;</span>);
+    <span class="hljs-comment">/*Where are they going? Staying local or going on a cross country*/</span>
+    <span class="hljs-keyword">const</span> [typeOfFlight, setTypeOfFlight] = useState(<span class="hljs-string">&quot;pattern&quot;</span>);
+    <span class="hljs-comment">/*If they are going on a cross country, to what airports*/</span>
+    <span class="hljs-keyword">const</span> [xcDestination, setXcDestination] = useState(<span class="hljs-string">&quot;&quot;</span>);
+    <span class="hljs-comment">/*If they are going on a cross country, what are their alternates*/</span>
+    <span class="hljs-keyword">const</span> [xcAlternate, setXcAlternate] = useState(<span class="hljs-string">&quot;&quot;</span>);
+    <span class="hljs-comment">/*Will they be doing the xc under IFR or VFR?*/</span>
+    <span class="hljs-keyword">const</span> [flightRules, setFlightRules] = useState(<span class="hljs-string">&quot;VFR&quot;</span>);
+    <span class="hljs-keyword">const</span> [timeInAirplane, setTimeInAirplane] = useState(<span class="hljs-number">20</span>);
+    <span class="hljs-keyword">const</span> [lastDualLanding, setLastDualLanding] = useState(<span class="hljs-number">0</span>);
+    <span class="hljs-keyword">const</span> [lastDualStall, setLastDualStall] = useState(<span class="hljs-number">0</span>);
+    <span class="hljs-keyword">const</span> [groundReferenceManeuvers, setGroundReferenceManeuvers] = useState(<span class="hljs-number">0</span>);
+    <span class="hljs-keyword">const</span> [showDynamicQuestions, setShowDynamicQuestions] = useState(<span class="hljs-literal">false</span>);
+    <span class="hljs-keyword">const</span> [formValidation, setFormValidation] = useState(<span class="hljs-literal">true</span>);
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">generateData</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">const</span> formattedDepartureDate = moment(departureTime).utc().format(<span class="hljs-string">&quot;MM/DD/yyyy HH:mm&quot;</span>).toString();
+        <span class="hljs-keyword">const</span> data = {
+            <span class="hljs-string">&#x27;departureTime&#x27;</span>: formattedDepartureDate,
+            departureAirport,
+            studentName,
+            studentLevel,
+            isDualFlight,
+            prevFlights,
+            flightDuty,
+            categoryOfFlight,
+            typeOfFlight,
+            xcDestination,
+            flightRules,
+            xcAlternate
+        }
+        <span class="hljs-keyword">return</span> data;
+    }
+
+    <span class="hljs-comment">/*Simple logging function. For debugging purposes only.*/</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">logState</span>(<span class="hljs-params">e</span>) </span>{
+        <span class="hljs-comment">/* Remember that setState() is async so console.log my lag behind the state change*/</span>
+        e.preventDefault();
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;-----FlightAssessmentForm State Variables-----&quot;</span>)
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;departureTime: &quot;</span> + departureTime);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;Departure Airport: &quot;</span> + departureAirport);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;Student name: &quot;</span> + studentName);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;Student level: &quot;</span> + studentLevel);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;Is Dual flight: &quot;</span> + isDualFlight);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;previous flights: &quot;</span> + prevFlights);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;flightDuty: &quot;</span> + flightDuty);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;Category of flight: &quot;</span> + categoryOfFlight);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;Type of Flight: &quot;</span> + typeOfFlight);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;---------------------------------------------&quot;</span>)
+    }
+
+    <span class="hljs-keyword">if</span> (!showDynamicQuestions) {
+        <span class="hljs-keyword">return</span> (
+            <span class="xml"><span class="hljs-tag">&lt;&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">Link</span> <span class="hljs-attr">to</span>=<span class="hljs-string">&quot;/AdminPanel/SearchStudent&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">style</span>=<span class="hljs-string">{{float:</span> &quot;<span class="hljs-attr">right</span>&quot;}} <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span>&gt;</span>Admin<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">Link</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">Jumbotron</span> <span class="hljs-attr">fluid</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;jumbo&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>Risk Assessment Form<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">Jumbotron</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">Container</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;overflow-x-auto&quot;</span>&gt;</span>
+
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Form</span> <span class="hljs-attr">nonValidate</span> <span class="hljs-attr">validated</span>=<span class="hljs-string">{formValidation}</span> <span class="hljs-attr">onSubmit</span>=<span class="hljs-string">{()</span> =&gt;</span> setShowDynamicQuestions(true)}&gt;
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Row}</span> <span class="hljs-attr">controlId</span>=<span class="hljs-string">&quot;departureDateAndTime&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Label</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;align-right&quot;</span>&gt;</span>Departure Time and Date: <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Label</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;8&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">DatePicker</span>
+                                    <span class="hljs-attr">selected</span>=<span class="hljs-string">{departureTime}</span>
+                                    <span class="hljs-attr">onChange</span>=<span class="hljs-string">{date</span> =&gt;</span> setDepartureTime(date)}
+                                    timeInputLabel=&quot;Departure Time:&quot;
+                                    dateFormat=&quot;MM/dd/yyyy h:mm aa&quot;
+                                    timeFormat=&quot;HH:mm&quot;
+                                    showTimeInput
+                                    minDate={(new Date())}
+                                    className=&quot;float-left w-100&quot;
+                                    required
+                                /&gt;
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Row}</span> <span class="hljs-attr">controlId</span>=<span class="hljs-string">&quot;studentLevel&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Label</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;4&quot;</span>&gt;</span>Time of Flight<span class="hljs-tag">&lt;/<span class="hljs-name">Form.Label</span>&gt;</span> {/*There is probably a better way to phrase this*/}
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;8&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Form.Control</span> <span class="hljs-attr">as</span>=<span class="hljs-string">&quot;select&quot;</span> <span class="hljs-attr">required</span>  <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;studentInfo&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;student_level&quot;</span>
+                                              <span class="hljs-attr">onChange</span>=<span class="hljs-string">{e</span> =&gt;</span> setTimeofFlight(e.target.value)} value={timeofFlight}&gt;
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;Day&quot;</span>&gt;</span>Day<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;Dusk&quot;</span>&gt;</span>Dusk<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;Night&quot;</span>&gt;</span>Night<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Control</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Row}</span> <span class="hljs-attr">controlId</span>=<span class="hljs-string">&quot;departureAirport&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Label</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;float-right&quot;</span>&gt;</span>Departure Airport: <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Label</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;8&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Form.Control</span>
+                                    <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text&quot;</span>
+                                    <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;departure_airport&quot;</span>
+                                    <span class="hljs-attr">onChange</span>=<span class="hljs-string">{e</span> =&gt;</span> setDepartureAirport(e.target.value)}
+                                    className=&quot;departureAirport&quot;
+                                    required
+                                /&gt;
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Row}</span> <span class="hljs-attr">controlId</span>=<span class="hljs-string">&quot;studentName&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Label</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;float-right&quot;</span>&gt;</span>Student&#x27;s Name: <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Label</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;8&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Form.Control</span>
+                                    <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text&quot;</span>
+                                    <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;student_name&quot;</span>
+                                    <span class="hljs-attr">onChange</span>=<span class="hljs-string">{e</span> =&gt;</span> setStudentName(e.target.value)}
+                                    className=&quot;studentInfo&quot;
+                                    required
+                                /&gt;
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Row}</span> <span class="hljs-attr">controlId</span>=<span class="hljs-string">&quot;studentLevel&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Label</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;4&quot;</span>&gt;</span>Certificate
+                                pursuing: <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Label</span>&gt;</span> {/*There is probably a better way to phrase this*/}
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;8&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Form.Control</span> <span class="hljs-attr">as</span>=<span class="hljs-string">&quot;select&quot;</span> <span class="hljs-attr">required</span>  <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;studentInfo&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;student_level&quot;</span>
+                                              <span class="hljs-attr">onChange</span>=<span class="hljs-string">{e</span> =&gt;</span> setStudentLevel(e.target.value)} value={studentLevel}&gt;
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;private&quot;</span>&gt;</span>Private Pilot&#x27;s License<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;instrument&quot;</span>&gt;</span>Instrument Rating<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;commercial&quot;</span>&gt;</span>Commercial License<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;cfi&quot;</span>&gt;</span>Certified Flight Instructor<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;multi&quot;</span>&gt;</span>Commercial Multi Engine Add-on<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;other&quot;</span>&gt;</span>Other<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Control</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Form.Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;dualFlight&quot;</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Col}</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Form.Check</span>
+                                    <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;checkbox&quot;</span> <span class="hljs-attr">label</span>=<span class="hljs-string">&quot;This is a dual flight&quot;</span>
+                                    <span class="hljs-attr">onChange</span>=<span class="hljs-string">{()</span> =&gt;</span> {
+                                        setIsDualFlight(!isDualFlight)
+                                    }}
+                                    value={isDualFlight}
+                                    className=&quot;mr-3&quot;
+                                /&gt;
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Row</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Form.Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Row}</span> <span class="hljs-attr">controlId</span>=<span class="hljs-string">&quot;missionSelect&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Form.Label</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;4&quot;</span>&gt;</span>Flight Rules<span class="hljs-tag">&lt;/<span class="hljs-name">Form.Label</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;8&quot;</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">Form.Control</span>
+                                        <span class="hljs-attr">as</span>=<span class="hljs-string">&quot;select&quot;</span>
+                                        <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;student_level&quot;</span>
+                                        <span class="hljs-attr">onChange</span>=<span class="hljs-string">{e</span> =&gt;</span> setFlightRules(e.target.value)}
+                                        value={flightRules}
+                                        className=&quot;studentInfo&quot;
+                                    &gt;
+                                        <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;VFR&quot;</span>&gt;</span>VFR<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                        <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;IFR&quot;</span>&gt;</span>IFR<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Control</span>&gt;</span>
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Row</span>&gt;</span>
+
+                        {flightRules === &quot;VFR&quot; &amp;&amp; !isDualFlight &amp;&amp;
+                        <span class="hljs-tag">&lt;<span class="hljs-name">HumanFactorQuestions</span>
+                            <span class="hljs-attr">studentLevel</span>=<span class="hljs-string">{studentLevel}</span>
+                            <span class="hljs-attr">setTimeInAirplane</span>=<span class="hljs-string">{setTimeInAirplane}</span>
+                            <span class="hljs-attr">setLastDualLanding</span>=<span class="hljs-string">{setLastDualLanding}</span>
+                            <span class="hljs-attr">setLastDualStall</span>=<span class="hljs-string">{setLastDualStall}</span>
+                            <span class="hljs-attr">groundReferenceManeuvers</span>=<span class="hljs-string">{groundReferenceManeuvers}</span>
+                            <span class="hljs-attr">setGroundReferenceManeuvers</span>=<span class="hljs-string">{setGroundReferenceManeuvers}</span>
+                            <span class="hljs-attr">typeOfFlight</span>=<span class="hljs-string">{typeOfFlight}</span>
+                        /&gt;</span>
+
+                        }
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Row}</span> <span class="hljs-attr">controlId</span>=<span class="hljs-string">&quot;previousFlights&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Label</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;4&quot;</span>&gt;</span>Previous Flights that day<span class="hljs-tag">&lt;/<span class="hljs-name">Form.Label</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Control</span>
+                                <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;number&quot;</span>
+                                <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;prevFlights&quot;</span>
+                                <span class="hljs-attr">onChange</span>=<span class="hljs-string">{e</span> =&gt;</span> setPrevFlights(e.target.value)}
+                                value={prevFlights}
+                                className=&quot;studentInfo&quot;
+                                column md=&quot;8&quot;
+                            /&gt;
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+
+                        {/*Should only display if prevFlight &gt; 0*/}
+                        <span class="hljs-tag">&lt;<span class="hljs-name">FlightDutyFormInput</span>
+                            <span class="hljs-attr">prevFlights</span>=<span class="hljs-string">{prevFlights}</span>
+                            <span class="hljs-attr">flightDuty</span>=<span class="hljs-string">{flightDuty}</span>
+                            <span class="hljs-attr">eventHandler</span>=<span class="hljs-string">{setFlightDuty}</span>
+                        /&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Form.Group</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Row}</span> <span class="hljs-attr">controlId</span>=<span class="hljs-string">&quot;catOfFlight&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Label</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;4&quot;</span>&gt;</span>Category of Syllabus Flight<span class="hljs-tag">&lt;/<span class="hljs-name">Form.Label</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Form.Control</span> <span class="hljs-attr">as</span>=<span class="hljs-string">&quot;select&quot;</span> <span class="hljs-attr">column</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;studentInfo&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;student_level&quot;</span>
+                                          <span class="hljs-attr">onChange</span>=<span class="hljs-string">{e</span> =&gt;</span> setCategoryOfFlight(e.target.value)} value={categoryOfFlight}&gt;
+                                <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;normal&quot;</span>&gt;</span>Normal<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;stage_check&quot;</span>&gt;</span>Stage Check<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;checkride&quot;</span>&gt;</span>FAA Practical Test<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Control</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Form.Group</span>&gt;</span>
+
+                        {/*Should only display if categoryOfFlight is &#x27;normal&#x27;*/}
+                        <span class="hljs-tag">&lt;<span class="hljs-name">TypeOfFlightFormInput</span>
+                            <span class="hljs-attr">categoryOfFlight</span>=<span class="hljs-string">{categoryOfFlight}</span>
+                            <span class="hljs-attr">typeOfFlight</span>=<span class="hljs-string">{typeOfFlight}</span>
+                            <span class="hljs-attr">eventHandler</span>=<span class="hljs-string">{setTypeOfFlight}</span>
+                            <span class="hljs-attr">xcDestination</span>=<span class="hljs-string">{xcDestination}</span>
+                            <span class="hljs-attr">xcAlternate</span>=<span class="hljs-string">{xcAlternate}</span>
+                            <span class="hljs-attr">setXcDestination</span>=<span class="hljs-string">{setXcDestination}</span>
+                            <span class="hljs-attr">setXcAlternate</span>=<span class="hljs-string">{setXcAlternate}</span>
+                        /&gt;</span>
+
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;dash-btn&quot;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;submit&quot;</span>&gt;</span>
+                            Next
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Form</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">Container</span>&gt;</span>
+            <span class="hljs-tag">&lt;/&gt;</span></span>
+        );
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">const</span> data = generateData();
+        <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">DynamicFormInput</span> <span class="hljs-attr">requestData</span>=<span class="hljs-string">{data}</span> <span class="hljs-attr">timeofFlight</span>=<span class="hljs-string">{timeofFlight}</span> <span class="hljs-attr">timeInAirplane</span>=<span class="hljs-string">{timeInAirplane}</span> <span class="hljs-attr">lastDualLanding</span>=<span class="hljs-string">{lastDualLanding}</span>
+                                <span class="hljs-attr">flightRules</span>=<span class="hljs-string">{flightRules}</span>  /&gt;</span></span>);
+
+    }
+}
+
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> RiskAssessmentForm;</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

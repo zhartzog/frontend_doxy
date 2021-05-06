@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>CurrentSettings.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>CurrentSettings.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-1">&#x00a7;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> React, {Component} <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;react&#x27;</span>;
+<span class="hljs-keyword">import</span> {Link} <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;react-router-dom&quot;</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;./../stylesheets/AdminPanel.css&#x27;</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;bootstrap/dist/css/bootstrap.min.css&#x27;</span>;
+<span class="hljs-keyword">import</span> {Jumbotron, Row, Col, Form, FormGroup, Button} <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;react-bootstrap&#x27;</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-2">&#x00a7;</a>
+              </div>
+              <p>This component displays all of current safety limits.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">CurrentSettings</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span></span>{
+    
+    <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params">props</span>)</span> {
+        <span class="hljs-built_in">super</span>(props);
+
+        <span class="hljs-built_in">this</span>.state = ({
+                    <span class="hljs-attr">group</span>: <span class="hljs-string">&quot;ifr&quot;</span>,
+                    <span class="hljs-attr">category</span>: <span class="hljs-string">&quot;departure&quot;</span>,
+                    <span class="hljs-attr">items</span>: [],
+                    <span class="hljs-attr">loaded</span>: <span class="hljs-literal">false</span>,
+                    });
+    }
+
+    <span class="hljs-function"><span class="hljs-title">componentDidMount</span>(<span class="hljs-params"></span>)</span> {
+        fetch(<span class="hljs-string">&quot;/adminThresholds/getAll&quot;</span>)
+            .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
+            .then(
+                <span class="hljs-function">(<span class="hljs-params">result</span>) =&gt;</span> {
+                    <span class="hljs-built_in">this</span>.setState({<span class="hljs-attr">items</span>: result})
+                }
+            )
+        <span class="hljs-built_in">this</span>.setState({<span class="hljs-attr">loaded</span>: <span class="hljs-literal">true</span>})
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-3">&#x00a7;</a>
+              </div>
+              <p>This function changes if the vfr limits are being shown or if the ifr limits are being shown.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">switchCurrent</span>(<span class="hljs-params">panel</span>)</span>{
+        <span class="hljs-built_in">this</span>.setState({<span class="hljs-attr">group</span>: panel})
+        <span class="hljs-keyword">if</span> (panel === <span class="hljs-string">&quot;ifr&quot;</span>)
+            <span class="hljs-built_in">this</span>.setState({<span class="hljs-attr">category</span>: <span class="hljs-string">&quot;departure&quot;</span>})
+        <span class="hljs-keyword">else</span>
+            <span class="hljs-built_in">this</span>.setState({<span class="hljs-attr">category</span>: <span class="hljs-string">&quot;localPattern&quot;</span>})
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-4">&#x00a7;</a>
+              </div>
+              <p>This function changes if the vfr limits are being shown or if the ifr limits are being shown.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">switchCategory</span>(<span class="hljs-params">panel</span>)</span>{
+        <span class="hljs-built_in">this</span>.setState({<span class="hljs-attr">category</span>: panel})
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-5">&#x00a7;</a>
+              </div>
+              <p>This function return the html for the limits.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">Display</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-keyword">const</span> listItems = <span class="hljs-built_in">this</span>.state.items.map(<span class="hljs-function">(<span class="hljs-params">value</span>) =&gt;</span>{
+        <span class="hljs-keyword">if</span>(value.group === <span class="hljs-built_in">this</span>.state.group &amp;&amp; value.category === <span class="hljs-built_in">this</span>.state.category)
+            <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">key</span>=<span class="hljs-string">{value.name}</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">b</span>&gt;</span>{value.name}<span class="hljs-tag">&lt;/<span class="hljs-name">b</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>{value.ranges} Low: {value.low} {value.ranges} Medium: {value.med} {value.ranges} High: {value.high} {value.ranges}<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+        });
+        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.state.group === <span class="hljs-string">&quot;ifr&quot;</span>){
+            <span class="hljs-keyword">return</span> (
+                <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Col}</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.switchCategory.bind(this,</span> &quot;<span class="hljs-attr">departure</span>&quot;)}&gt;</span>Departure<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Col}</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.switchCategory.bind(this,</span> &quot;<span class="hljs-attr">enroute</span>&quot;)}&gt;</span>Enroute<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Col}</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.switchCategory.bind(this,</span> &quot;<span class="hljs-attr">destination</span>&quot;)}&gt;</span>Destination<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Col}</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.switchCategory.bind(this,</span> &quot;<span class="hljs-attr">physiology</span>&quot;)}&gt;</span>Physiology<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>{this.state.category}<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+                    {listItems}
+                <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span></span>
+            );
+        }
+        <span class="hljs-keyword">else</span>{
+            <span class="hljs-keyword">return</span> (
+                <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Col}</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.switchCategory.bind(this,</span> &quot;<span class="hljs-attr">localPattern</span>&quot;)}&gt;</span>Local Pattern<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Col}</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.switchCategory.bind(this,</span> &quot;<span class="hljs-attr">departure</span>&quot;)}&gt;</span>Departure<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Col}</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.switchCategory.bind(this,</span> &quot;<span class="hljs-attr">enroute</span>&quot;)}&gt;</span>Enroute<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Col}</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.switchCategory.bind(this,</span> &quot;<span class="hljs-attr">destination</span>&quot;)}&gt;</span>Destination<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Col}</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.switchCategory.bind(this,</span> &quot;<span class="hljs-attr">physiology</span>&quot;)}&gt;</span>Physiology<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Col}</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.switchCategory.bind(this,</span> &quot;<span class="hljs-attr">soloFactors</span>&quot;)}&gt;</span>Solo Factors<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>{this.state.category}<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+                    {listItems}
+                <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span></span>
+            );
+        }
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-6">&#x00a7;</a>
+              </div>
+              <p>This renders the jumbotron and the currently selected limits.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-title">render</span>(<span class="hljs-params"></span>)</span> {
+        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.state.loaded == <span class="hljs-literal">true</span>){
+            <span class="hljs-keyword">return</span> (
+                <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Jumbotron</span> <span class="hljs-attr">fluid</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;jumbo&quot;</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Admin Panel<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Link</span> <span class="hljs-attr">to</span>=<span class="hljs-string">&quot;/AdminPanel/SearchStudent&quot;</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span>&gt;</span>Search Students&#x27; Forms<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">Link</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Link</span> <span class="hljs-attr">to</span>=<span class="hljs-string">&quot;/AdminPanel/CurrentSettings&quot;</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span>&gt;</span>Current Safety Limits<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">Link</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Link</span> <span class="hljs-attr">to</span>=<span class="hljs-string">&quot;/AdminPanel/SetLimits&quot;</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span>&gt;</span>Set Safety Limits<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">Link</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Jumbotron</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Row</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;section&quot;</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Col}</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.switchCurrent.bind(this,</span> &quot;<span class="hljs-attr">ifr</span>&quot;)}&gt;</span>IFR Safety Limits<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Button</span> <span class="hljs-attr">as</span>=<span class="hljs-string">{Col}</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;btn dash-btn&quot;</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{this.switchCurrent.bind(this,</span> &quot;<span class="hljs-attr">vfr</span>&quot;)}&gt;</span>VFR Safety Limits<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+                        {this.Display()}
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+            )
+        }
+        <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">return</span>(<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>The page is loading...<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>)
+        }
+    }
+
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> CurrentSettings;</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

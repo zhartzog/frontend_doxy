@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>ResultPage.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>ResultPage.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-1">&#x00a7;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> React, {useEffect, useState} <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;react&#x27;</span>;
+<span class="hljs-keyword">import</span> axios <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;axios&quot;</span>;
+<span class="hljs-keyword">import</span> {Col, Container, Jumbotron, Row} <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;react-bootstrap&quot;</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;./../stylesheets/RiskAssessmentForm.css&#x27;</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ResultPage</span>(<span class="hljs-params">props</span>) </span>{
+    <span class="hljs-keyword">const</span> [results, setResults] = useState(<span class="hljs-literal">null</span>);
+
+    useEffect(<span class="hljs-function">() =&gt;</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;Results request Data: &quot;</span>)
+        <span class="hljs-built_in">console</span>.log(props.requestData)
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;Flight rules:&quot;</span>+props.flightRules);
+        <span class="hljs-keyword">const</span> url = props.flightRules === <span class="hljs-string">&quot;IFR&quot;</span> ? <span class="hljs-string">&quot;/IFRRiskCalculation&quot;</span> : <span class="hljs-string">&quot;/VFRRiskCalculation&quot;</span>;
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;URL: &quot;</span> + url);
+        axios({
+            <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;post&#x27;</span>,
+            <span class="hljs-attr">url</span>: url,
+            <span class="hljs-attr">headers</span>: {
+                <span class="hljs-attr">accept</span>: <span class="hljs-string">&quot;application/json&quot;</span>,
+                <span class="hljs-string">&quot;Content-Type&quot;</span>: <span class="hljs-string">&quot;application/json&quot;</span>
+            },
+            <span class="hljs-attr">data</span>: props.requestData
+        }).then(<span class="hljs-function"><span class="hljs-params">response</span> =&gt;</span> {
+            <span class="hljs-built_in">console</span>.log(response.data);
+            setResults(response.data);
+        })
+    }, []);
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getResult</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;Results request Data: &quot;</span>)
+        <span class="hljs-built_in">console</span>.log(props.requestData)
+        <span class="hljs-keyword">const</span> url = props.isDepartureIFR ? <span class="hljs-string">&quot;/IFRRiskCalculation&quot;</span> : <span class="hljs-string">&quot;/VFRRiskCalculation&quot;</span>;
+        axios({
+            <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;post&#x27;</span>,
+            <span class="hljs-attr">url</span>: url,
+            <span class="hljs-attr">data</span>: props.requestData
+        }).then(<span class="hljs-function"><span class="hljs-params">response</span> =&gt;</span> {
+            <span class="hljs-built_in">console</span>.log(response.data);
+        })
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isIFR</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">return</span> props.flightRules === <span class="hljs-string">&quot;IFR&quot;</span>;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getRisk</span>(<span class="hljs-params">risk</span>) </span>{
+        <span class="hljs-keyword">if</span> (risk === <span class="hljs-number">0</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Low&quot;</span>;
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (risk === <span class="hljs-number">1</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Medium&quot;</span>
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (risk == <span class="hljs-number">3</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;High&quot;</span>
+        <span class="hljs-keyword">else</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;No-go&quot;</span>
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setSpan</span>(<span class="hljs-params">risk</span>) </span>{
+        <span class="hljs-keyword">if</span> (risk === <span class="hljs-number">0</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;results-span-low&quot;</span>;
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (risk === <span class="hljs-number">1</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;results-span-med&quot;</span>
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (risk == <span class="hljs-number">3</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;results-span-high&quot;</span>
+        <span class="hljs-keyword">else</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;results-span-no-go&quot;</span>
+
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">calculateDepartureRisk</span>(<span class="hljs-params">isIFR</span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;In Dparture risk&quot;</span>);
+        <span class="hljs-built_in">console</span>.log(results);
+        <span class="hljs-keyword">if</span> (results === <span class="hljs-literal">null</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">let</span> sum = results.departure_ceiling_risk + results.departure_vis_risk + results.departure_wind_risk + results.departure_gust_risk + results.departure_crosswind_risk;
+        <span class="hljs-keyword">if</span> (isIFR) {
+            sum += results.departure_iap_risk;
+        }
+        <span class="hljs-keyword">return</span> sum;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">calculateEnrouteRisk</span>(<span class="hljs-params">isIFR</span>) </span>{
+        <span class="hljs-keyword">if</span> (results === <span class="hljs-literal">null</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">let</span> sum = results.enroute_ceiling_risk + results.enroute_vis_risk + results.time_enroute_risk + results.fuel_at_alternate_risk;
+        <span class="hljs-keyword">if</span> (isIFR) {
+            sum += results.thunderstorm_risk;
+        } <span class="hljs-keyword">else</span> {
+            sum += results.vfr_checkpoint_risk;
+        }
+        <span class="hljs-keyword">return</span> sum;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">calculateDestinationRisk</span>(<span class="hljs-params">isIFR</span>) </span>{
+        <span class="hljs-keyword">if</span> (results === <span class="hljs-literal">null</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">let</span> sum = results.destination_ceiling_risk + results.destination_vis_risk + results.destination_wind_risk + results.destination_gust_risk + results.destination_crosswind_risk;
+        <span class="hljs-keyword">if</span> (isIFR) {
+            sum += results.destination_iap_risk;
+        }
+        <span class="hljs-keyword">return</span> sum;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">calculateAlternateRisk</span>(<span class="hljs-params">isIFR</span>) </span>{
+        <span class="hljs-keyword">if</span> (results === <span class="hljs-literal">null</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">let</span> sum = results.alternate_ceiling_risk + results.alternate_vis_risk + results.alternate_wind_risk + results.alternate_gust_risk + results.alternate_crosswind_risk;
+        <span class="hljs-keyword">if</span> (isIFR) {
+            sum += results.alternate_iap_risk;
+        }
+        <span class="hljs-keyword">return</span> sum;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">calculateHFRisk</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">if</span> (results === <span class="hljs-literal">null</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">return</span> results.time_of_flight_risk + results.flight_duty_risk + results.previous_flight_risk + results.type_of_flight_risk + results.temperature_risk;
+
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">calculateSoloRisk</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">if</span> (results === <span class="hljs-literal">null</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">return</span> results.flight_location_risk + results.ground_ref_maneuver_risk + results.experience_in_airplane_risk + results.dual_landing_risk + results.dual_stall_risk;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setCategoryRisk</span>(<span class="hljs-params">risk</span>) </span>{
+        <span class="hljs-keyword">if</span> (risk &lt; <span class="hljs-number">12</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;category-risk-low&quot;</span>;
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (risk &lt; <span class="hljs-number">15</span>)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;category-risk-med&quot;</span>;
+        <span class="hljs-keyword">else</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;category-risk-high&quot;</span>
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setDepartureTitle</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">if</span> (props.typeofFlight === <span class="hljs-string">&quot;pattern&quot;</span>) {
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Local Pattern &quot;</span>
+        }
+
+        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Departure&quot;</span>;
+    }
+
+
+    <span class="hljs-keyword">if</span>(results !== <span class="hljs-literal">null</span>) {
+        <span class="hljs-keyword">return</span> (
+            <span class="xml"><span class="hljs-tag">&lt;&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Jumbotron</span> <span class="hljs-attr">fluid</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;jumbo&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center mb-3 &quot;</span>&gt;</span>Risk Assessment Result<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Jumbotron</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                <span class="hljs-tag">&lt;<span class="hljs-name">Container</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;dynamicContainer&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;12&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">h3</span> <span class="hljs-attr">className</span>=<span class="hljs-string">{</span>&quot;<span class="hljs-attr">text-center</span> <span class="hljs-attr">category-risk</span> &quot; + <span class="hljs-attr">setCategoryRisk</span>(<span class="hljs-attr">calculateDepartureRisk</span>(<span class="hljs-attr">isIFR</span>()))}&gt;</span>{setDepartureTitle()} risk
+                                - {calculateDepartureRisk(isIFR())}<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">hr</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Ceiling Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.departure_ceiling_risk)}</span>&gt;</span>{getRisk(results.departure_ceiling_risk)} (score: {results.departure_ceiling_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Visibility Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.departure_vis_risk)}</span>&gt;</span>{getRisk(results.departure_vis_risk)} (score: {results.departure_vis_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                    {props.flightRules === &quot;IFR&quot; &amp;&amp;
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>IAP Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.departure_iap_risk)}</span>&gt;</span>{getRisk(results.departure_iap_risk)} (score: {results.departure_iap_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+                    }
+
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Total Wind Risk<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.departure_wind_risk)}</span>&gt;</span>{getRisk(results.departure_wind_risk)} (score: {results.departure_wind_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Gust Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                    <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.departure_gust_risk)}</span>&gt;</span>{getRisk(results.departure_gust_risk)} (score: {results.departure_gust_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                    <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Crosswind Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.departure_crosswind_risk)}</span>&gt;</span>{getRisk(results.departure_crosswind_risk)} (score: {results.departure_crosswind_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                    {/*Enroute Risk-----------------------------------------------*/}
+                    {!props.isLocal() &amp;&amp;
+                    <span class="hljs-tag">&lt;&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;12&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">h3</span> <span class="hljs-attr">className</span>=<span class="hljs-string">{</span>&quot;<span class="hljs-attr">text-center</span> <span class="hljs-attr">category-risk</span> &quot; + <span class="hljs-attr">setCategoryRisk</span>(<span class="hljs-attr">calculateEnrouteRisk</span>(<span class="hljs-attr">isIFR</span>()))}&gt;</span>Enroute
+                                    Risk
+                                    - {calculateEnrouteRisk(isIFR())}<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">hr</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span> Ceiling Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.enroute_ceiling_risk)}</span>&gt;</span>{getRisk(results.enroute_ceiling_risk)} (score: {results.enroute_ceiling_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+
+
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span> Visibility Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.enroute_vis_risk)}</span>&gt;</span>{getRisk(results.enroute_vis_risk)} (score: {results.enroute_vis_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        {props.flightRules === &quot;IFR&quot; &amp;&amp;
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span> Thunderstorm Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.thunderstorm_risk)}</span>&gt;</span>{getRisk(results.thunderstorm_risk)} (score: {results.thunderstorm_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>}
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Time Enroute Risk<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.time_enroute_risk)}</span>&gt;</span>{getRisk(results.time_enroute_risk)} (score: {results.time_enroute_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span> Fuel At Alternate Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.fuel_at_alternate_risk)}</span>&gt;</span>{getRisk(results.fuel_at_alternate_risk)} (score: {results.fuel_at_alternate_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/&gt;</span>
+                    }
+
+                    {/*Destination Risk ----------------------------------------------------*/}
+                    {!props.isLocal() &amp;&amp;
+                    <span class="hljs-tag">&lt;&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;12&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">h3</span> <span class="hljs-attr">className</span>=<span class="hljs-string">{</span>&quot;<span class="hljs-attr">text-center</span> <span class="hljs-attr">category-risk</span> &quot; + <span class="hljs-attr">setCategoryRisk</span>(<span class="hljs-attr">calculateDestinationRisk</span>(<span class="hljs-attr">isIFR</span>()))}&gt;</span>Destination
+                                    Risk
+                                    - {calculateDestinationRisk(isIFR())}<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">hr</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Ceiling Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.destination_ceiling_risk)}</span>&gt;</span>{getRisk(results.destination_ceiling_risk)} (score: {results.destination_ceiling_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+
+
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span> Visibility Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.destination_vis_risk)}</span>&gt;</span>{getRisk(results.destination_vis_risk)} (score: {results.destination_vis_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        {props.flightRules === &quot;IFR&quot; &amp;&amp;
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>IAP Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.destination_iap_risk)}</span>&gt;</span>{getRisk(results.destination_iap_risk)} (score: {results.destination_iap_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>}
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Total Wind Risk<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.destination_wind_risk)}</span>&gt;</span>{getRisk(results.destination_wind_risk)} (score: {results.destination_wind_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Gust Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.destination_gust_risk)}</span>&gt;</span>{getRisk(results.destination_gust_risk)} (score: {results.destination_gust_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Crosswind Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.destination_crosswind_risk)}</span>&gt;</span>{getRisk(results.destination_crosswind_risk)} (score: {results.destination_crosswind_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/&gt;</span></span>
+                    }
+
+
+                    {<span class="hljs-comment">/*Alternate Risk ---------------------------------------------------------------*/</span>}
+                    {!props.isLocal() &amp;&amp;
+                    <span class="xml"><span class="hljs-tag">&lt;&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;12&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">h3</span> <span class="hljs-attr">className</span>=<span class="hljs-string">{</span>&quot;<span class="hljs-attr">text-center</span> <span class="hljs-attr">category-risk</span> &quot; + <span class="hljs-attr">setCategoryRisk</span>(<span class="hljs-attr">calculateAlternateRisk</span>(<span class="hljs-attr">isIFR</span>()))}&gt;</span>Alternate
+                                    Risk
+                                    - {calculateAlternateRisk(isIFR())}<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">hr</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Ceiling Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.alternate_ceiling_risk)}</span>&gt;</span>{getRisk(results.alternate_ceiling_risk)} (score: {results.alternate_ceiling_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+
+
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span> Visibility Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.alternate_vis_risk)}</span>&gt;</span>{getRisk(results.alternate_vis_risk)} (score: {results.alternate_vis_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        {props.flightRules === &quot;IFR&quot; &amp;&amp;
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>IAP Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.alternate_iap_risk)}</span>&gt;</span>{getRisk(results.alternate_iap_risk)} (score: {results.alternate_iap_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>}
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Total Wind Risk<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.alternate_wind_risk)}</span>&gt;</span>{getRisk(results.alternate_wind_risk)} (score: {results.alternate_wind_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Gust Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.alternate_gust_risk)}</span>&gt;</span>{getRisk(results.alternate_gust_risk)} (score: {results.alternate_gust_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Crosswind Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                        <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.alternate_crosswind_risk)}</span>&gt;</span>{getRisk(results.alternate_crosswind_risk)} (score: {results.alternate_crosswind_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/&gt;</span></span>
+                    }
+
+
+                    {<span class="hljs-comment">/* Human Factor Risk ------------------------------*/</span>}
+                    &lt;Row&gt;
+                        <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;12&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">h3</span> <span class="hljs-attr">className</span>=<span class="hljs-string">{</span>&quot;<span class="hljs-attr">text-center</span> <span class="hljs-attr">category-risk</span> &quot; + <span class="hljs-attr">setCategoryRisk</span>(<span class="hljs-attr">calculateHFRisk</span>())}&gt;</span>Human
+                                Factor Risk
+                                - {calculateHFRisk()}<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">hr</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span></span>
+                    &lt;/Row&gt;
+
+                    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Time of Flight Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.time_of_flight_risk)}</span>&gt;</span>{getRisk(results.time_of_flight_risk)} (score: {results.time_of_flight_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+
+
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span></span>
+
+                    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Flight Duty Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.flight_duty_risk)}</span>&gt;</span>{getRisk(results.flight_duty_risk)} (score: {results.flight_duty_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span></span>
+
+                    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Previous Flight Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.previous_flight_risk)}</span>&gt;</span>{getRisk(results.previous_flight_risk)} (score: {results.previous_flight_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span></span>
+
+                    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Syllabus Flight Type Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.type_of_flight_risk)}</span>&gt;</span>{getRisk(results.type_of_flight_risk)} (score: {results.type_of_flight_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span></span>
+
+                    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+
+                            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Temperature Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                    <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.temperature_risk)}</span>&gt;</span>{getRisk(results.temperature_risk)} (score: {results.temperature_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+
+                        <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span></span>
+
+                    {!props.isDual&amp;&amp;
+                        <span class="xml"><span class="hljs-tag">&lt;&gt;</span>
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">md</span>=<span class="hljs-string">&quot;12&quot;</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">h3</span> <span class="hljs-attr">className</span>=<span class="hljs-string">{</span>&quot;<span class="hljs-attr">text-center</span> <span class="hljs-attr">category-risk</span> &quot; + <span class="hljs-attr">setCategoryRisk</span>(<span class="hljs-attr">calculateSoloRisk</span>())}&gt;</span>Solo
+                                        Risk
+                                        - {calculateSoloRisk()}<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">hr</span>/&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Flight Location:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                    <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.flight_location_risk)}</span>&gt;</span>{getRisk(results.flight_location_risk)} (score: {results.flight_location_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Ground Reference Maneuver Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                    <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.ground_ref_maneuver_risk)}</span>&gt;</span>{getRisk(results.ground_ref_maneuver_risk)} (score: {results.ground_ref_maneuver_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Experience In Airplane Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                    <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.ground_ref_maneuver_risk)}</span>&gt;</span>{getRisk(results.ground_ref_maneuver_risk)} (score: {results.ground_ref_maneuver_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Last Dual Landing Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                    <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.dual_stall_risk)}</span>&gt;</span>{getRisk(results.dual_stall_risk)} (score: {results.dual_stall_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+
+                            <span class="hljs-tag">&lt;<span class="hljs-name">Row</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;mx-3 pb-2&quot;</span>&gt;</span>
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">br</span>/&gt;</span>
+
+                                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;results-span&quot;</span>&gt;</span>Last Dual Landing Risk:<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">Col</span> <span class="hljs-attr">sm</span>=<span class="hljs-string">&quot;8&quot;</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-center&quot;</span>&gt;</span>
+                                <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
+                                    <span class="hljs-attr">className</span>=<span class="hljs-string">{setSpan(results.dual_landing_risk)}</span>&gt;</span>{getRisk(results.dual_landing_risk)} (score: {results.dual_landing_risk})<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                                <span class="hljs-tag">&lt;/<span class="hljs-name">Col</span>&gt;</span>
+                            <span class="hljs-tag">&lt;/<span class="hljs-name">Row</span>&gt;</span>
+                        <span class="hljs-tag">&lt;/&gt;</span></span>
+                    }
+
+                &lt;/Container&gt;
+            &lt;/&gt;
+        );
+    }
+    <span class="hljs-keyword">else</span>{
+        <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Loading...<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span></span>);
+    }
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> ResultPage;</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
